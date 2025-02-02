@@ -1,3 +1,5 @@
+pip freeze > requirements.txt
+
 celery -A backend worker --loglevel=info --pool=threads
 celery -A backend flower
 

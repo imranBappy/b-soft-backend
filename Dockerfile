@@ -8,15 +8,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Clean up any existing sources and add the correct sources
-RUN rm -f /etc/apt/sources.list.d/* && \
-    echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
+RUN echo "deb http://ftp.us.debian.org/debian bookworm main" > /etc/apt/sources.list && \
+    echo "deb http://ftp.us.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
     echo "deb http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Install Python dependencies
 COPY requirements.txt /app/

@@ -1,5 +1,5 @@
 # Use an official slim Python runtime
-FROM python:3.9-slim
+FROM python:3.9
 
 # Prevent Python from writing .pyc files and buffering stdout
 ENV PYTHONDONTWRITEBYTECODE=1 \

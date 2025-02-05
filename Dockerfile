@@ -7,8 +7,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Set work directory
 WORKDIR /app
 
-# Manually configure apt sources
-RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
+# Clean up any existing sources and add the correct sources
+RUN rm -f /etc/apt/sources.list.d/* && \
+    echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
     echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
     echo "deb http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list && \
     apt-get update && \

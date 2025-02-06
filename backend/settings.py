@@ -145,8 +145,8 @@ DATABASES = {
         "NAME": config("DB_NAME", ""),
         "USER": config("DB_USER", ""),
         "PASSWORD": config("DB_PASS", ""),
-        # "HOST": config("DB_HOST", "localhost"),
-        'HOST': 'host.docker.internal',  # Use this for Windows
+        "HOST": config("DB_HOST", "localhost"),
+        # 'HOST': 'host.docker.internal',  # Use this for Windows
 
         "PORT": config("DB_PORT", "5435"),
     }

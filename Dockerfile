@@ -1,33 +1,21 @@
-FROM python:3.9-slim
+# Base image with Python
+FROM python:3.10-slim
 
-# Set environment variables to prevent Python from buffering stdout and to prevent .pyc files
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Set work directory
-WORKDIR /app
+# Set the working directory
 
-# Clean up any existing sources and add the correct sources
-RUN echo "deb http://ftp.us.debian.org/debian bookworm main" > /etc/apt/sources.list && \
-    echo "deb http://ftp.us.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
-    echo "deb http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-
-# Install Python dependencies
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
+# Copy requirements and install dependencies
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the rest of the project
-COPY . /app/
+# Copy the entire project
+COPY . .
 
-# Expose the port your app runs on
+# Open the appropriate port
 EXPOSE 8000
 
-# Run migrations and start Gunicorn (adjust as needed)
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run Django server
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

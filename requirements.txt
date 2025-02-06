@@ -69,7 +69,6 @@ locust==2.32.5
 MarkupSafe==3.0.2
 matplotlib==3.9.2
 msgpack==1.1.0
-mysqlclient==2.2.7
 namex==0.0.8
 numpy==1.26.4
 opt_einsum==3.4.0
@@ -82,7 +81,7 @@ promise==2.3
 prompt_toolkit==3.0.48
 protobuf==4.25.5
 psutil==6.1.1
-psycopg2==2.9.10
+psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycparser==2.22
@@ -98,7 +97,7 @@ python-decouple==3.8
 python-dotenv==1.0.1
 pytube==15.0.0
 pytz==2024.2
-pywin32==308
+# pypiwin32==223
 pyzmq==26.2.0
 redis==5.2.1
 requests==2.32.3
@@ -115,7 +114,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sqlparse==0.5.1
-tablib==3.5.0
+#tablib==3.5.0
 tensorboard-data-server==0.7.2
 termcolor==2.4.0
 text-unidecode==1.3

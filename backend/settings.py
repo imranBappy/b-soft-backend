@@ -42,7 +42,7 @@ OTP_TIMESTAMP = config('OTP_TIMESTAMP', default=5, cast=int)
 # templates
 APPEND_SLASH = False
 
-
+ 
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

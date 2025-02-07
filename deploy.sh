@@ -5,7 +5,7 @@ git stash
 git pull origin master
 
 echo "Activating virtual environment..."
-source env/bin/activate
+source venv/bin/activate
 
 echo "Installing dependencies..."
 pip install -r requirements.txt
@@ -18,7 +18,11 @@ python3 manage.py migrate
 
 echo "Restarting Gunicorn..."
 pkill gunicorn
-nohup gunicorn --bind 0.0.0.0:8000 b-soft-backend.wsgi:application > gunicorn.log 2>&1 &
 
+echo "Restarting Celery worker..."
+pkill -f "celery worker"
+nohup celery -A backend worker --loglevel=info > celery_worker.log 2>&1 &
+# nohup gunicorn --bind 0.0.0.0:8000 backend.wsgi:application > gunicorn.log 2>&1 &
+nohup python3 manage.py  runserver > server.log 2>&1 &
 
 echo "Deployment completed!"

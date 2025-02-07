@@ -12,3 +12,4 @@ __pycache__
 run-cmd.txt
 cmd.txt
 b-soft.pem
+./backend/.env

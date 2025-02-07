@@ -18,7 +18,7 @@ python3 manage.py migrate
 
 echo "Restarting Gunicorn..."
 pkill gunicorn
-nohup gunicorn --bind 0.0.0.0:8000 my_tennis_club.wsgi:application > gunicorn.log 2>&1 &
+nohup gunicorn --bind 0.0.0.0:8000 b-soft-backend.wsgi:application > gunicorn.log 2>&1 &
 
 
 echo "Deployment completed!"

@@ -1,10 +1,24 @@
 from graphene_django.types import DjangoObjectType
 import graphene
-from apps.product.models import Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
-from apps.product.filters import CouponFilter, CredentialFilter, AttributeOptionFilter, AttributeFilter, ProductDescriptionFilter, ProductFilter, CategoryFilter, OrderFilter, OrderProductFilter ,  PaymentFilter
+from apps.product.models import FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
+from apps.product.filters import FAQFilter, ReviewFilter, CouponFilter, CredentialFilter, AttributeOptionFilter, AttributeFilter, ProductDescriptionFilter, ProductFilter, CategoryFilter, OrderFilter, OrderProductFilter ,  PaymentFilter
 from backend.count_connection import CountConnection
 from apps.accounts.objectType import UserType
 
+class ReviewType(DjangoObjectType):
+    id = graphene.ID(required=True)
+    class Meta:
+        model = Review
+        filterset_class =ReviewFilter
+        interfaces = (graphene.relay.Node,)
+        connection_class = CountConnection 
+class FAQType(DjangoObjectType):
+    id = graphene.ID(required=True)
+    class Meta:
+        model = FAQ
+        filterset_class =FAQFilter
+        interfaces = (graphene.relay.Node,)
+        connection_class = CountConnection 
 
 class  ProductDescriptionType(DjangoObjectType):
     id = graphene.ID(required=True)

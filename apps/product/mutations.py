@@ -6,9 +6,9 @@ from backend.authentication import isAuthenticated
 
 from datetime import datetime
 from graphene_django.forms.mutation import DjangoFormMutation
-from apps.product.forms import ProductForm, CategoryForm, OrderForm, OrderProductForm, PaymentForm, CredentialForm, AttributeOptionForm, ProductDescriptionForm, AttributeForm
-from apps.product.models import Category, Product, Order, OrderProduct,  Payment, Credential, AttributeOption, Attribute, ProductDescription
-from apps.accounts.models import Address
+from apps.product.forms import ReviewForm,FAQForm, ProductForm, CategoryForm, OrderForm, OrderProductForm, PaymentForm, CredentialForm, AttributeOptionForm, ProductDescriptionForm, AttributeForm
+from apps.product.models import FAQ, Review, Category, Product, Order, OrderProduct,  Payment, Credential, AttributeOption, Attribute, ProductDescription
+from apps.accounts.models import Address, UserRole
 import json 
 from django.utils.timezone import now
 from datetime import timedelta
@@ -16,6 +16,7 @@ from graphql import GraphQLError
 import random
 import string
 import uuid
+
 
 class CategoryCUD(DjangoFormMutation):
     message = graphene.String()
@@ -185,9 +186,53 @@ class PaymentCUD(DjangoFormMutation):
             order = form.save()
             return PaymentCUD( success=True)
         create_graphql_error(form.errors)
+class ReviewCUD(DjangoFormMutation):
+    success = graphene.Boolean()
+    class Meta:
+        form_class = ReviewForm
 
+    @isAuthenticated([UserRole.CUSTOMER, UserRole.ADMIN])
+    def mutate_and_get_payload(self, info, **input):
+        try:
+            input['user'] = info.context.User.id
+            instance = get_object_or_none(Review, id=input.get("id"))
+            form = ReviewForm(input, instance=instance)
+            if not form.is_valid():
+                create_graphql_error(form.errors) 
+                
+            form.save()
+            return ReviewCUD(success=True) 
+        except Exception as e:
+            print(e)
+
+class DeleteReview(graphene.Mutation):
+    message = graphene.String()
+    success = graphene.Boolean()    
+    class Arguments:
+        id = graphene.ID(required=True)
+    def mutate(self, info, id):
+        review = get_object_by_kwargs(Review, {"id": id})
+        review.delete()
+        return DeleteReview(success=True, message="Deleted!")
+class FAQCUD(DjangoFormMutation):
+    success = graphene.Boolean()
+    class Meta:
+        form_class = FAQForm
+    
+    def mutate_and_get_payload(self, info, **input):
+        instance = get_object_or_none(FAQ, id=input.get("id"))
+        form = FAQForm(input, instance=instance)
+        if not form.is_valid():
+            create_graphql_error(form.errors) 
+            
+        form.save()
+        return FAQCUD(success=True ) 
 
 class Mutation(graphene.ObjectType):
+    review_cud = ReviewCUD.Field()
+    delete_review = DeleteReview.Field()
+    faq_cud = FAQCUD.Field()
+
     product_cud = ProductCUD.Field()
     delete_product = DeleteProduct.Field()
     category_cud = CategoryCUD.Field()

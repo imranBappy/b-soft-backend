@@ -82,7 +82,6 @@ def isAuthenticated(roles=None):
         def wrapper(root, info, *args, **kwargs):
             # Extract the authorization header
             auth_header = info.context.headers.get("Authorization")
-            
             if not auth_header:
                raise GraphQLError("You are not authenticated.")
             # Validate the header format and extract the token
@@ -106,7 +105,6 @@ def isAuthenticated(roles=None):
             # Attach user and authentication status to the context
             info.context.User = user
             info.context.is_authenticated =  True
-            
             if not roles:
                 return func(root, info, *args, **kwargs)
             

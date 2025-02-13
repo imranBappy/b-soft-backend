@@ -147,8 +147,6 @@ DATABASES = {
         "USER": config("DB_USER", ""),
         "PASSWORD": config("DB_PASS", ""),
         "HOST": config("DB_HOST", "localhost"),
-        # 'HOST': 'host.docker.internal',  # Use this for Windows
-
         "PORT": config("DB_PORT", "5435"),
     }
 }
@@ -190,10 +188,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'static') # Absolute path to where collectstatic will gather the static files
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    "/var/www/static/",
-]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

@@ -1,7 +1,20 @@
 from django import forms
-from .models import Product, Category,ProductDescription,Attribute,AttributeOption,Credential,  Order, OrderProduct, User,   Payment
+from .models import FAQ, Review, Product, Category,ProductDescription,Attribute,AttributeOption,Credential,  Order, OrderProduct, User,   Payment
 from .models import ORDER_TYPE_CHOICES, PAYMENT_METHOD_CHOICES, ORDER_STATUS_CHOICES
 from apps.accounts.models import Address
+
+class ReviewForm(forms.ModelForm):
+    id = forms.CharField(required=False)
+    class Meta:
+        model = Review
+        fields = "__all__"
+
+
+class FAQForm(forms.ModelForm):
+    id = forms.CharField(required=False)
+    class Meta:
+        model = FAQ
+        fields = "__all__"
 
 class ProductForm(forms.ModelForm):
     id = forms.CharField(required=False)

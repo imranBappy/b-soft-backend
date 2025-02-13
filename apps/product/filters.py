@@ -1,8 +1,17 @@
-from apps.product.models import Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
+from apps.product.models import FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
 import django_filters as filters
 from apps.base.filters import BaseFilterOrderBy
 from django.db.models import Q
 from datetime import timedelta
+
+class ReviewFilter(BaseFilterOrderBy):
+    class Meta:
+        model = Review
+        fields = '__all__'
+class FAQFilter(BaseFilterOrderBy):
+    class Meta:
+        model = FAQ
+        fields = '__all__'
 
 class ProductFilter(BaseFilterOrderBy):
     tag = filters.CharFilter(lookup_expr="exact", field_name="tag")

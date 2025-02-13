@@ -1,13 +1,18 @@
 import graphene
-from apps.product.models import Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
+from apps.product.models import FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
 from apps.accounts.models import Address
 from apps.base.utils import get_object_by_kwargs
-from apps.product.objectType import CredentialType, AttributeOptionType, AttributeType, ProductDescriptionType, CouponType, CategoryType, ProductType, SubCategoryType, PaymentType, OrderType, OrderProductType
+from apps.product.objectType import ReviewType, FAQType, CredentialType, AttributeOptionType, AttributeType, ProductDescriptionType, CouponType, CategoryType, ProductType, SubCategoryType, PaymentType, OrderType, OrderProductType
 from graphene_django.filter import DjangoFilterConnectionField
 
 
 class Query(graphene.ObjectType):
-    
+    faq = graphene.Field(FAQType, id=graphene.ID(required=True))
+    faqs = DjangoFilterConnectionField(FAQType)
+
+    review = graphene.Field(ReviewType, id=graphene.ID(required=True))
+    reviews = DjangoFilterConnectionField(ReviewType)
+
     credential = graphene.Field(CredentialType, id=graphene.ID(required=True))
     credentials = DjangoFilterConnectionField(CredentialType)
     
@@ -42,6 +47,17 @@ class Query(graphene.ObjectType):
     payment = graphene.Field(PaymentType, id=graphene.ID(required=False), order=graphene.ID(required=False))
     payments = DjangoFilterConnectionField(PaymentType)
     
+    def resolve_review(self, info, id):
+        return get_object_by_kwargs(Review, {"id": id})
+     
+    def resolve_reviews(self, info, **kwargs):
+        return Review.objects.all()
+
+    def resolve_faq(self, info, id):
+        return get_object_by_kwargs(FAQ, {"id": id})
+     
+    def resolve_faqs(self, info, **kwargs):
+        return FAQ.objects.all()
 
     def resolve_category(self, info, id):
         return get_object_by_kwargs(Category, {"id": id})

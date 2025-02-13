@@ -29,8 +29,8 @@ class Product(models.Model):
     ]
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=12, decimal_places=8)
-    # price_range = models.CharField(max_length=100, null=True, blank=True)
-    
+    price_range = models.CharField(max_length=100, null=True, blank=True)
+    offer_price =models.DecimalField(max_digits=12, decimal_places=8, null=True, blank=True)
     short_description = models.TextField(null=True, blank=True)
     
     photo =  models.CharField(max_length=255,null=True, blank=True)
@@ -72,12 +72,8 @@ class  Attribute(models.Model):
 class  AttributeOption(models.Model):
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, related_name='attribute_options')
     option = models.CharField(max_length=100) # 
-    
-    price = models.DecimalField(max_digits=12, decimal_places=8)
-    # extra_price = models.DecimalField(max_digits=12, decimal_places=8)
-    
-    # short_description = models.TextField(null=True, blank=True)
-    # description = models.TextField(null=True, blank=True)
+    message = models.TextField(blank=True, null=True)  # Optional message for specific option
+    extra_price = models.DecimalField(max_digits=12, decimal_places=8)
     photo =  models.CharField(max_length=255,null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -263,3 +259,24 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment {self.id} - Order {self.order.id} - Status {self.status}"
 
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    product = models.ForeignKey('Product', related_name='faqs', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.question
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='reviews', on_delete=models.CASCADE)
+
+    content = models.TextField()
+    rating = models.PositiveSmallIntegerField(default=1)  # Rating from 1 to 5
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} - {self.rating} Stars"
+    
+    class Meta:
+        ordering = ['-created_at']

@@ -1,6 +1,17 @@
 from django.contrib import admin
 # Register your models here.
-from apps.product.models import Category,ProductDescription,Attribute,AttributeOption, Payment, Product, Order, OrderProduct
+from apps.product.models import FAQ, Review, Category,ProductDescription,Attribute,AttributeOption, Payment, Product, Order, OrderProduct
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('id','content')
+    search_fields = ['content']
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ('id','question')
+    search_fields = ['question']
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

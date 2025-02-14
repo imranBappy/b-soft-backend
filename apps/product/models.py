@@ -215,11 +215,22 @@ class OrderProduct(models.Model):
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='items') 
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)    
     def __str__(self):
         return f"{self.id}"
+
+class OrderProductAttribute(models.Model):
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+    option = models.ForeignKey(AttributeOption, on_delete=models.CASCADE)
+    order_product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) 
+
+    def __str__(self):
+        return f"{self.id} "
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [

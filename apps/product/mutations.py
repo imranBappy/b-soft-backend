@@ -6,8 +6,8 @@ from backend.authentication import isAuthenticated
 
 from datetime import datetime
 from graphene_django.forms.mutation import DjangoFormMutation
-from apps.product.forms import ReviewForm,FAQForm, ProductForm, CategoryForm, OrderForm, OrderProductForm, PaymentForm, CredentialForm, AttributeOptionForm, ProductDescriptionForm, AttributeForm
-from apps.product.models import FAQ, Review, Category, Product, Order, OrderProduct,  Payment, Credential, AttributeOption, Attribute, ProductDescription
+from apps.product.forms import OrderProductAttributeForm, ReviewForm,FAQForm, ProductForm, CategoryForm, OrderForm, OrderProductForm, PaymentForm, CredentialForm, AttributeOptionForm, ProductDescriptionForm, AttributeForm
+from apps.product.models import OrderProductAttribute,FAQ, Review, Category, Product, Order, OrderProduct,  Payment, Credential, AttributeOption, Attribute, ProductDescription
 from apps.accounts.models import Address, UserRole
 import json 
 from django.utils.timezone import now
@@ -17,6 +17,28 @@ import random
 import string
 import uuid
 
+class OrderProductAttributeCUD(DjangoFormMutation):
+    message = graphene.String()
+    success = graphene.Boolean()
+    
+    class Meta:
+        form_class = OrderProductAttributeForm
+    
+    @isAuthenticated()
+    def mutate_and_get_payload(self, info, **input):
+            
+        instance = get_object_or_none(OrderProductAttribute, id=input.get('id'))
+        form = OrderProductAttributeForm(input, instance=instance)
+        if not form.is_valid():
+            return create_graphql_error(form)
+
+        orderProductAttribute = form.save()
+
+        return OrderProductAttributeCUD(
+                message="Created successfully",
+                success=True,
+            )
+        
 
 class CategoryCUD(DjangoFormMutation):
     message = graphene.String()
@@ -178,9 +200,6 @@ class PaymentCUD(DjangoFormMutation):
     def mutate_and_get_payload(self, info, **input):
         instance = get_object_or_none(Payment, id=input.get('id'))
         form = PaymentForm(input, instance=instance)
-        # if not input.get('trx_id'):
-        #     trx_id = ''.join(random.choices(string.ascii_uppercase + string.digits , k=15))
-        #     input['trx_id'] =trx_id
             
         if form.is_valid():
             order = form.save()
@@ -203,7 +222,9 @@ class ReviewCUD(DjangoFormMutation):
             form.save()
             return ReviewCUD(success=True) 
         except Exception as e:
-            print(e)
+            return GraphQLError("Server error!")
+
+
 
 class DeleteReview(graphene.Mutation):
     message = graphene.String()
@@ -239,8 +260,7 @@ class Mutation(graphene.ObjectType):
     order_cud = OrderCUD.Field()
     order_product_cud = OrderProductCUD.Field()
     payment_cud = PaymentCUD.Field()
-    
-    
+    order_product_attribute_cud = OrderProductAttributeCUD.Field()
     
     
     

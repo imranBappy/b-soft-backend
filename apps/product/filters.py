@@ -1,8 +1,13 @@
-from apps.product.models import FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
+from apps.product.models import OrderProductAttribute, FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
 import django_filters as filters
 from apps.base.filters import BaseFilterOrderBy
 from django.db.models import Q
 from datetime import timedelta
+
+class OrderProductAttributeFilter(BaseFilterOrderBy):
+    class Meta:
+        model = OrderProductAttribute
+        fields = '__all__'
 
 class ReviewFilter(BaseFilterOrderBy):
     class Meta:

@@ -1,12 +1,15 @@
 import graphene
-from apps.product.models import FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
+from apps.product.models import OrderProductAttribute, FAQ, Review, Product, Category,Coupon, Order,Credential, ProductDescription,Attribute,AttributeOption, OrderProduct, Address,  Payment
 from apps.accounts.models import Address
 from apps.base.utils import get_object_by_kwargs
-from apps.product.objectType import ReviewType, FAQType, CredentialType, AttributeOptionType, AttributeType, ProductDescriptionType, CouponType, CategoryType, ProductType, SubCategoryType, PaymentType, OrderType, OrderProductType
+from apps.product.objectType import OrderProductAttributeType, ReviewType, FAQType, CredentialType, AttributeOptionType, AttributeType, ProductDescriptionType, CouponType, CategoryType, ProductType, SubCategoryType, PaymentType, OrderType, OrderProductType
 from graphene_django.filter import DjangoFilterConnectionField
 
 
 class Query(graphene.ObjectType):
+    order_product_attribute = graphene.Field(OrderProductAttributeType, id=graphene.ID(required=True))
+    order_product_attributes = DjangoFilterConnectionField(OrderProductAttributeType)
+
     faq = graphene.Field(FAQType, id=graphene.ID(required=True))
     faqs = DjangoFilterConnectionField(FAQType)
 
@@ -47,6 +50,12 @@ class Query(graphene.ObjectType):
     payment = graphene.Field(PaymentType, id=graphene.ID(required=False), order=graphene.ID(required=False))
     payments = DjangoFilterConnectionField(PaymentType)
     
+    def resolve_order_product_attribute(self, info, id):
+        return get_object_by_kwargs(OrderProductAttribute, {"id": id})
+     
+    def resolve_order_product_attributes(self, info, **kwargs):
+        return OrderProductAttribute.objects.all()
+
     def resolve_review(self, info, id):
         return get_object_by_kwargs(Review, {"id": id})
      

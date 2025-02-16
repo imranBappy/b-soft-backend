@@ -20,8 +20,7 @@ class FAQFilter(BaseFilterOrderBy):
 
 class ProductFilter(BaseFilterOrderBy):
     tag = filters.CharFilter(lookup_expr="exact", field_name="tag")
-    category = filters.NumberFilter(lookup_expr="exact", field_name="category")
-    subcategory = filters.NumberFilter(lookup_expr="exact", field_name="subcategory")
+    category = filters.BaseInFilter(lookup_expr="in", field_name="category")
     search = filters.CharFilter(method="filter_search")
     is_active = filters.BooleanFilter(field_name="is_active")
     created_at_start = filters.DateFilter(method='filter_created_at_range', field_name='start')
@@ -37,9 +36,7 @@ class ProductFilter(BaseFilterOrderBy):
 
     def filter_search(self, queryset, name, value):
         return queryset.filter(
-            Q(name__icontains=value) |
-            Q(tag__icontains=value) |
-            Q(description__icontains=value)
+            Q(name__icontains=value) 
         )
 
     def filter_created_at_range(self, queryset, name, value):
@@ -114,6 +111,18 @@ class PaymentFilter(BaseFilterOrderBy):
         
     
 class ProductDescriptionFilter(BaseFilterOrderBy):
+    product = filters.NumberFilter(lookup_expr="exact", field_name="product")
+    tag = filters.NumberFilter(lookup_expr="exact", field_name="tag")
+    search = filters.CharFilter(method="filter_search")
+    
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(
+            Q(label__icontains=value) |
+            Q(tag__icontains=value) |
+            Q(description__icontains=value)|
+            Q(product__product_id__icontains=value)|
+            Q(product__product_name__icontains=value)
+        )
     class Meta:
         model = ProductDescription
         fields = '__all__'    

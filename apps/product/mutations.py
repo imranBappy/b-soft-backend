@@ -8,7 +8,7 @@ from datetime import datetime
 from graphene_django.forms.mutation import DjangoFormMutation
 from apps.product.forms import OrderProductAttributeForm, ReviewForm,FAQForm, ProductForm, CategoryForm, OrderForm, OrderProductForm, PaymentForm, CredentialForm, AttributeOptionForm, ProductDescriptionForm, AttributeForm
 from apps.product.models import OrderProductAttribute,FAQ, Review, Category, Product, Order, OrderProduct,  Payment, Credential, AttributeOption, Attribute, ProductDescription
-from apps.accounts.models import Address, UserRole
+from apps.accounts.models import Address, UserRole, User
 import json 
 from django.utils.timezone import now
 from datetime import timedelta
@@ -16,6 +16,11 @@ from graphql import GraphQLError
 import random
 import string
 import uuid
+from django.conf import settings
+from apps.base.utils import generate_otp
+from django.db import transaction
+
+base_url = settings.WEBSITE_URL
 
 class OrderProductAttributeCUD(DjangoFormMutation):
     message = graphene.String()
@@ -67,11 +72,11 @@ class ProductDescriptionCUD(DjangoFormMutation):
     success = graphene.Boolean()
 
     class Meta:
-        form_class = AttributeForm
+        form_class = ProductDescriptionForm
 
     def mutate_and_get_payload(self, info, **input):
         instance = get_object_or_none(ProductDescription, id=input.get("id"))
-        form = AttributeOptionForm(input, instance=instance)
+        form = ProductDescriptionForm(input, instance=instance)
         if not form.is_valid():
             create_graphql_error(form.errors) 
             
@@ -178,6 +183,141 @@ class OrderCUD(DjangoFormMutation):
         return OrderCUD(message="Created successfully!", success=True, order=order)
     
 
+
+# Order 
+class OrderProductAttributeInput(graphene.InputObjectType):
+    attribute_id = graphene.ID(required=True)
+    option_id = graphene.ID(required=True)
+
+class OrderProductInput(graphene.InputObjectType):
+    product_id = graphene.ID(required=True)
+    quantity = graphene.Int(required=True)
+    attributes = graphene.List(OrderProductAttributeInput, required=False)  # Variants
+class OrderPaymentInput(graphene.InputObjectType):
+    account_number = graphene.String(required=True)
+    trx_id = graphene.String(required=False)
+    payment_method =  graphene.String(required=True)
+    
+class CreateOrderInput(graphene.InputObjectType):
+    user_email = graphene.String(required=True)
+    user_name = graphene.String(required=True)
+    phone = graphene.String(required=False)
+    products = graphene.List(OrderProductInput, required=True)
+    payment = graphene.Field(OrderPaymentInput , required=True)
+
+def generate_random_password(length=10):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+class CreateOrder(graphene.Mutation):
+    class Arguments:
+        input = CreateOrderInput(required=True)
+
+    success = graphene.Boolean()
+
+    def mutate(self, info, input):
+        try:
+            user = User.objects.filter(email=input.user_email).first()
+            random_password = generate_random_password()
+            if not user:
+                user = User.objects.create(
+                    email=input.user_email,
+                    name=input.user_name,
+                    phone=input.phone,
+                    password=random_password,  
+                    is_verified=True
+                )
+                # gen_otp = generate_otp()
+                # user.send_email_verification(
+                #     gen_otp, base_url
+                # )
+
+                
+            
+            if not input.products:
+                raise GraphQLError("Order must contain at least one product.")
+
+            if not input.payment:
+                raise GraphQLError("Order must contain payment information.")
+            
+            if not input.payment.payment_method:
+                raise GraphQLError("Select payment method")
+
+            if not input.payment.account_number:
+                raise GraphQLError("Enter payment account number")
+
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=user,
+                    total_price=0,  # Updated later
+                    status="PENDING",
+                    is_cart=False,
+                    order_id = random_password
+                )
+
+                total_price = 0
+                extra_price = 0
+                for item in input.products:
+                    product = Product.objects.filter(id=item.product_id).first()
+                    if not product:
+                        raise GraphQLError(f"Product with ID {item.product_id} not found.")
+
+                    if item.quantity <= 0:
+                        raise GraphQLError(f"Quantity must be at least 1 for product {product.id}.")
+                    
+                    base_price = product.price * item.quantity
+                    price = product.price
+                    if(product.offer_price):
+                        base_price = product.offer_price * item.quantity
+                        price = product.offer_price
+
+                    total_price+=base_price
+                 
+
+
+                    order_product = OrderProduct.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=item.quantity,
+                        price=price
+                    )
+
+                    # Handle product attributes (variants)
+                    if item.attributes:
+                        for attr in item.attributes: 
+                            attribute = Attribute.objects.get(id=attr.attribute_id)  # ✅ Fetch the Attribute instance
+                            option = AttributeOption.objects.get(id=attr.option_id)  # ✅ Fetch the Option instance
+
+                            if not attribute or not option:
+                                raise GraphQLError(f"Invalid variant/option for product {product.id}.")
+
+                            extra_price += option.extra_price * item.quantity
+
+                            OrderProductAttribute.objects.create(
+                                order_product=order_product,
+                                attribute=attribute,
+                                option=option,
+                                extra_price=option.extra_price
+                            )
+
+                order.total_price = total_price + extra_price
+                order.save()
+                Payment.objects.create(
+                        order=order,
+                        amount=order.total_price,
+                        payment_method=input.payment.payment_method,
+                        account_number=input.payment.account_number,
+                        trx_id = input.payment.trx_id,
+                    )
+
+                
+
+            return CreateOrder(success=True)
+        except Exception as e:
+            print(e)
+            raise GraphQLError(extensions=e)
+
+
+
 class OrderProductCUD(DjangoFormMutation):
     success = graphene.Boolean()
     id = graphene.ID()
@@ -261,6 +401,6 @@ class Mutation(graphene.ObjectType):
     order_product_cud = OrderProductCUD.Field()
     payment_cud = PaymentCUD.Field()
     order_product_attribute_cud = OrderProductAttributeCUD.Field()
-    
-    
+    product_description_cud = ProductDescriptionCUD.Field()
+    create_order = CreateOrder.Field()
     

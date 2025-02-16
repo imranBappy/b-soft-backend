@@ -198,17 +198,17 @@ class Order(models.Model):
     class Meta:
         ordering = ['-id']
     
-    def save(self, *args, **kwargs):
-        if self.coupon:
-            if self.coupon.is_valid(self.amount, self.user.id):
-                discount = self.coupon.discount_amount(self.amount)
-                self.discount_applied = self.amount - discount
-                self.final_amount = self.final_amount - (self.amount - discount)
-            else:
-                raise ValueError("Invalid coupon.")
-            self.coupon.apply()
+    # def save(self, *args, **kwargs):
+    #     if self.coupon:
+    #         if self.coupon.is_valid(self.amount, self.user.id):
+    #             discount = self.coupon.discount_amount(self.amount)
+    #             self.discount_applied = self.amount - discount
+    #             self.final_amount = self.final_amount - (self.amount - discount)
+    #         else:
+    #             raise ValueError("Invalid coupon.")
+    #         self.coupon.apply()
         
-        super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
 
 class OrderProduct(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
@@ -222,9 +222,10 @@ class OrderProduct(models.Model):
         return f"{self.id}"
 
 class OrderProductAttribute(models.Model):
-    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
-    option = models.ForeignKey(AttributeOption, on_delete=models.CASCADE)
-    order_product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE)
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, related_name='order_product_attribute')
+    option = models.ForeignKey(AttributeOption, on_delete=models.CASCADE, related_name='order_product_attribute')
+    order_product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, related_name='order_product_attribute')
+    extra_price = models.DecimalField(max_digits=12, decimal_places=8)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) 
@@ -245,6 +246,12 @@ class Payment(models.Model):
     payment_method = models.CharField(
         max_length=100, 
         choices=PAYMENT_METHOD_CHOICES
+    )
+    account_number= models.CharField(
+        max_length=15, 
+        unique=True, 
+        null=True, 
+        blank=True
     )
     status = models.CharField(
         max_length=100, 
